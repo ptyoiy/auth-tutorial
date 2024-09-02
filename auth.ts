@@ -4,8 +4,7 @@ import { PrismaAdapter } from '@auth/prisma-adapter';
 import NextAuth from 'next-auth';
 import { getUserById } from './data/user';
 
-// config내용을 auth와 middleware로 분리하는 이유는 edge 런타임과의 호환성 때문
-// 여기서 auth()를 통해 불러와 사용할 session 데이터를 수정할 수 있음
+// 컴포넌트에서 auth()를 통해 불러와 사용할 session 데이터를 수정할 수 있음
 export const { auth, handlers, signIn, signOut } = NextAuth({
   pages: {
     signIn: '/auth/login',
@@ -20,13 +19,18 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
     },
   },
   callbacks: {
-    // async signIn({user}) {
-    //   const existingUser = await getUserById(user.id!);
-    //   if (!existingUser || !existingUser.emailVerified) {
-    //     return false;
-    //   }
-    //   return true;
-    // },
+    async signIn({user, account}) {
+      // Allow all OAuth without email verification
+      if (account?.provider !== "credentials") return true;
+
+      // Prevent sign in without email verification
+      const existingUser = await getUserById(user.id!);
+      if (!existingUser?.emailVerified) return false;
+
+      // TODO: add 2FA
+
+      return true;
+    },
     async jwt({ token }) {
       if (!token.sub) return token;
       const existingUser = await getUserById(token.sub);
