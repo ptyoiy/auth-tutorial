@@ -11,7 +11,7 @@ import {
   FormField,
   FormItem,
   FormLabel,
-  FormMessage,
+  FormMessage
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { LoginSchema } from '@/schemas';
@@ -30,14 +30,13 @@ export function LoginForm() {
       password: '',
     },
   });
-
   const onSubmit = (values: z.infer<typeof LoginSchema>) => {
     setError('');
     setSuccess('');
     startTransition(() => {
       login(values).then((data) => {
         setError(data?.error);
-        setSuccess(data?.success || '');
+        setSuccess(data?.success);
       });
     });
   };
